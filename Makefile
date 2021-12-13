@@ -6,6 +6,9 @@ PACKDIR          := sdk
 PROJECT          := github.com/pulumi/pulumi-terraform-bridge
 TESTPARALLELISM  := 10
 
+ensure::
+	go mod tidy
+
 build::
 	go build ${PROJECT}/v3/pkg/...
 	go build ${PROJECT}/v3/internal/...
@@ -29,3 +32,7 @@ travis_cron: all
 travis_push: all check_clean_worktree only_test
 travis_pull_request: all
 travis_api: all
+
+hack_local_deps::
+	go mod edit -replace github.com/pulumi/pulumi/pkg/v3=${HOME}/repos/vl/pulumi/pkg
+	go mod edit -replace github.com/pulumi/pulumi/sdk/v3=${HOME}/repos/vl/pulumi/sdk

@@ -49,4 +49,8 @@ require (
 	google.golang.org/grpc v1.37.0
 )
 
-replace github.com/hashicorp/terraform-plugin-sdk/v2 => github.com/pulumi/terraform-plugin-sdk/v2 v2.0.0-20201219002103-53f910a1ea61
+replace (
+	github.com/hashicorp/terraform-plugin-sdk/v2 => github.com/pulumi/terraform-plugin-sdk/v2 v2.0.0-20201219002103-53f910a1ea61
+	github.com/pulumi/pulumi/pkg/v3 => /Users/pprazak/repos/vl/pulumi/pkg
+	github.com/pulumi/pulumi/sdk/v3 => /Users/pprazak/repos/vl/pulumi/sdk
+)

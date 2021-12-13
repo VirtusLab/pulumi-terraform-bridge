@@ -31,6 +31,7 @@ import (
 	dotnetgen "github.com/pulumi/pulumi/pkg/v3/codegen/dotnet"
 	gogen "github.com/pulumi/pulumi/pkg/v3/codegen/go"
 	"github.com/pulumi/pulumi/pkg/v3/codegen/hcl2"
+	jvmgen "github.com/pulumi/pulumi/pkg/v3/codegen/jvm"
 	nodejsgen "github.com/pulumi/pulumi/pkg/v3/codegen/nodejs"
 	pygen "github.com/pulumi/pulumi/pkg/v3/codegen/python"
 	pschema "github.com/pulumi/pulumi/pkg/v3/codegen/schema"
@@ -75,12 +76,13 @@ const (
 	NodeJS Language = "nodejs"
 	Python Language = "python"
 	CSharp Language = "dotnet"
+	JVM    Language = "jvm"
 	Schema Language = "schema"
 )
 
 func (l Language) shouldConvertExamples() bool {
 	switch l {
-	case Golang, NodeJS, Python, CSharp, Schema:
+	case Golang, NodeJS, Python, CSharp, JVM, Schema:
 		return true
 	}
 	return false
@@ -140,12 +142,24 @@ func (l Language) emitSDK(pkg *pschema.Package, info tfbridge.ProviderInfo, root
 			return nil, err
 		}
 		return dotnetgen.GeneratePackage(tfgen, pkg, extraFiles)
+	case JVM:
+		if psi := info.JVM; psi != nil && psi.Overlay != nil {
+			extraFiles, err = getOverlayFiles(psi.Overlay, ".java", root)
+			if err != nil {
+				return nil, err
+			}
+		}
+		err = cleanDir(root, "", nil)
+		if err != nil && !os.IsNotExist(err) {
+			return nil, err
+		}
+		return jvmgen.GeneratePackage(tfgen, pkg, extraFiles)
 	default:
 		return nil, errors.Errorf("%v does not support SDK generation", l)
 	}
 }
 
-var AllLanguages = []Language{Golang, NodeJS, Python, CSharp}
+var AllLanguages = []Language{Golang, NodeJS, Python, CSharp, JVM}
 
 // pkg is a directory containing one or more modules.
 type pkg struct {
@@ -618,7 +632,7 @@ func NewGenerator(opts GeneratorOptions) (*Generator, error) {
 
 	// Ensure the language is valid.
 	switch lang {
-	case Golang, NodeJS, Python, CSharp, Schema:
+	case Golang, NodeJS, Python, CSharp, JVM, Schema:
 		// OK
 	default:
 		return nil, errors.Errorf("unrecognized language runtime: %s", lang)
@@ -1196,6 +1210,10 @@ func (g *Generator) gatherOverlays() (moduleMap, error) {
 	case CSharp:
 		if csharpinfo := g.info.CSharp; csharpinfo != nil {
 			overlay = csharpinfo.Overlay
+		}
+	case JVM:
+		if jvminfo := g.info.JVM; jvminfo != nil {
+			overlay = jvminfo.Overlay
 		}
 	case Schema:
 		// N/A

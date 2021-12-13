@@ -1156,8 +1156,10 @@ func (g *Generator) convertHCL(hcl, path string) (string, string, error) {
 		err = convertHCL("csharp")
 	case Golang:
 		err = convertHCL("go")
+	case JVM:
+		err = convertHCL("jvm")
 	case Schema:
-		langs := []string{"typescript", "python", "csharp", "go"}
+		langs := []string{"typescript", "python", "csharp", "go", "jvm"}
 		for _, lang := range langs {
 			if langErr := convertHCL(lang); langErr != nil {
 				return "", stderr.String(), langErr

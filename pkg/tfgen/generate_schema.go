@@ -323,6 +323,12 @@ func (g *schemaGenerator) genPackageSpec(pack *pkg) (pschema.PackageSpec, error)
 		})
 	}
 
+	if joi := g.info.JVM; joi != nil {
+		spec.Language["jvm"] = rawMessage(map[string]interface{}{
+			"basePackage": joi.BasePackage,
+		})
+	}
+
 	return spec, nil
 }
 
