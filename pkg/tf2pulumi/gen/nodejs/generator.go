@@ -323,6 +323,10 @@ func (g *generator) GeneratePreamble(modules []*il.Graph) error {
 	for _, m := range modules {
 		for _, p := range m.Providers {
 			name := p.PluginName
+			packageName := p.Info.JavaScript.PackageName
+			if packageName == "" {
+				packageName = fmt.Sprintf("@pulumi/%s", name)
+			}
 			if !providers[name] {
 				providers[name] = true
 				switch name {
@@ -335,7 +339,7 @@ func (g *generator) GeneratePreamble(modules []*il.Graph) error {
 				default:
 					importName := cleanName(name)
 					imports = append(imports,
-						fmt.Sprintf(`import * as %s from "@pulumi/%s";`, importName, name))
+						fmt.Sprintf(`import * as %s from "%s";`, importName, packageName))
 					g.importNames[importName] = true
 				}
 			}
